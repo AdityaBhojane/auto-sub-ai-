@@ -580,7 +580,7 @@ impl ModelManager {
         Ok((seg_path, emb_path))
     }
 
-    pub fn delete_whisper_model(&self, model: &str, repo: Option<&str>, file: Option<&str>) -> Result<()> {
+    pub fn delete_whisper_model(&self, model: &str, _repo: Option<&str>, file: Option<&str>) -> Result<()> {
         let cache_dir = self.model_cache_dir()?;
         if !cache_dir.exists() { return Ok(()); }
 

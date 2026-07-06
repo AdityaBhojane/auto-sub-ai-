@@ -233,7 +233,7 @@ impl Engine {
             }
             None => {
                 self.models
-                    .ensure_whisper_model(&options.model, cb.progress, cb.is_cancelled.as_deref())
+                    .ensure_whisper_model(&options.model, None, None, cb.progress, cb.is_cancelled.as_deref())
                     .await?
             }
         };
@@ -367,7 +367,7 @@ impl Engine {
     }
 
     pub async fn delete_whisper_model(&self, model_name: &str) -> eyre::Result<()> {
-        self.models.delete_whisper_model(model_name)
+        self.models.delete_whisper_model(model_name, None, None)
     }
 
     /// List all cached models (Whisper, Moonshine, Parakeet) in the cache directory.
