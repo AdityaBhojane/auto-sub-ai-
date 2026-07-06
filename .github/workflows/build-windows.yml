@@ -1,4 +1,4 @@
-﻿name: Build Windows App
+name: Build Windows App
 on:
   workflow_dispatch:
 
@@ -22,8 +22,8 @@ jobs:
 
       - name: Build Tauri
         env:
-          LIBCLANG_PATH: "C:\Program Files\LLVM\bin"
-          CARGO_TARGET_DIR: "C:\cargo-target"
+          LIBCLANG_PATH: 'C:\Program Files\LLVM\bin'
+          CARGO_TARGET_DIR: 'C:\cargo-target'
         run: |
           cd AutoSubs-App
           npm run tauri build -- -- --no-default-features --features windows
