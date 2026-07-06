@@ -262,9 +262,9 @@
         "type": "whisper-ggml", 
         "model": "hinglish", 
         "repo": "curiophile/whisper-hindi2hinglish-ggml", 
-        "file": "ggml-model-q4_0.bin" 
+        "file": "ggml-hindi2hinglish-prime.bin" 
       },
-      "ui": { "size": "150MB", "ram": "1GB", "image": "otter.png", "accuracy": 3, "weight": 4, "languageSupport": { "kind": "single_language", "language": "hi-latn" } }
+      "ui": { "size": "1.18GB", "ram": "4GB", "image": "otter.png", "accuracy": 4, "weight": 2, "languageSupport": { "kind": "single_language", "language": "hi-latn" } }
     }
   ],
   "_vad_comment": "Voice-activity detection model, auto-downloaded during transcription (not user-selectable).",

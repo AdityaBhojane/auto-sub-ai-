@@ -52,14 +52,43 @@ fn setup_params(options: &TranscribeOptions) -> FullParams {
     // (no_speech=0.6, logprob=-1.0, entropy=2.4), so we don't need to set
     // them explicitly here.
 
-    // Set input language
+    // Set input language.
+    // Special case: "hi-latn" (Hinglish) is not a whisper.cpp language code.
+    // Map it to "hi" (Hindi) so whisper.cpp accepts it, and rely on the
+    // fine-tuned model to produce romanized Hinglish output.
     if let Some(ref lang) = options.lang {
-        params.set_language(Some(lang));
+        let whisper_lang = if lang == "hi-latn" { "hi" } else { lang.as_str() };
+        if whisper_lang != "auto" {
+            params.set_language(Some(whisper_lang));
+        }
+    }
+
+    // If using Hinglish model, inject an initial prompt to bias the model
+    // toward romanized Hinglish output and prevent it from switching to English
+    // when English words are mixed in (code-switching).
+    let is_hinglish = options.lang.as_deref() == Some("hi-latn")
+        || options.model.contains("hinglish")
+        || options.model.contains("hindi2hinglish");
+
+    if is_hinglish {
+        let user_prompt = options.advanced.as_ref()
+            .and_then(|a| a.init_prompt.as_deref())
+            .unwrap_or("");
+        let hinglish_prompt = if user_prompt.is_empty() {
+            // Seed the decoder with Hinglish text so the model continues in Latin script.
+            // This is the same technique used by the OriserveAI reference implementation.
+            "Yeh ek Hinglish conversation hai. Sab kuch Roman script mein likha jayega.".to_string()
+        } else {
+            user_prompt.to_string()
+        };
+        params.set_initial_prompt(&hinglish_prompt);
+    } else if let Some(advanced) = options.advanced.as_ref() {
+        if let Some(ref prompt) = advanced.init_prompt {
+            params.set_initial_prompt(prompt);
+        }
     }
 
     // Set translation options (Whisper built-in to English).
-    // Whisper can only natively translate to English, so we activate it only
-    // when use_native_translation is requested and the target is "en".
     if options.use_native_translation.unwrap_or(false)
         && options.translate_target.as_deref() == Some("en")
     {
@@ -71,24 +100,16 @@ fn setup_params(options: &TranscribeOptions) -> FullParams {
             params.set_temperature(temp);
         }
 
-        // Optional temperature (only greedy sampling supports temperature > 0)
         if advanced.sampling_strategy.as_deref() == Some("greedy") {
             if let Some(temp) = advanced.temperature {
                 params.set_temperature(temp);
             }
         }
 
-        // Optional max text context
         if let Some(ctx) = advanced.max_text_ctx {
             params.set_n_max_text_ctx(ctx);
         }
 
-        // Optional initial prompt
-        if let Some(ref prompt) = advanced.init_prompt {
-            params.set_initial_prompt(prompt);
-        }
-
-        // Optional thread count
         if let Some(threads) = advanced.n_threads {
             params.set_n_threads(threads);
         }
