@@ -77,6 +77,8 @@ impl ModelManager {
     pub async fn ensure_whisper_model(
         &self,
         model: &str,
+        repo: Option<&str>,
+        file: Option<&str>,
         progress: Option<&LabeledProgressFn>,
         is_cancelled: Option<&(dyn Fn() -> bool + Send + Sync)>,
     ) -> Result<PathBuf> {
@@ -88,18 +90,19 @@ impl ModelManager {
             }
         }
 
-        let filename = format!("ggml-{model}.bin");
+        let filename = file.map(|s| s.to_string()).unwrap_or_else(|| format!("ggml-{model}.bin"));
+        let repo_id = repo.unwrap_or("ggerganov/whisper.cpp");
 
         // On macOS with CoreML feature, main model is 0-70%; otherwise 0-100%
         #[cfg(feature = "coreml")]
-        let needs_coreml = cfg!(target_os = "macos");
+        let needs_coreml = cfg!(target_os = "macos") && repo.is_none();
         #[cfg(not(feature = "coreml"))]
         let needs_coreml = false;
 
         let model_path = if needs_coreml {
             // 0..70 for main model
             self.ensure_hub_model(
-                "ggerganov/whisper.cpp",
+                repo_id,
                 &filename,
                 progress,
                 is_cancelled,
@@ -110,7 +113,7 @@ impl ModelManager {
             .await?
         } else {
             self.ensure_hub_model(
-                "ggerganov/whisper.cpp",
+                repo_id,
                 &filename,
                 progress,
                 is_cancelled,
@@ -245,8 +248,8 @@ impl ModelManager {
         is_cancelled: Option<&(dyn Fn() -> bool + Send + Sync)>,
     ) -> Result<PathBuf> {
         match &entry.source {
-            Source::WhisperGgml { model } => {
-                self.ensure_whisper_model(model, progress, is_cancelled).await
+            Source::WhisperGgml { model, repo, file } => {
+                self.ensure_whisper_model(model, repo.as_deref(), file.as_deref(), progress, is_cancelled).await
             }
             Source::Hf { repo, files } => {
                 if let Some((subdir, key)) = Self::flat_layout(entry) {
@@ -577,12 +580,13 @@ impl ModelManager {
         Ok((seg_path, emb_path))
     }
 
-    pub fn delete_whisper_model(&self, model: &str) -> Result<()> {
+    pub fn delete_whisper_model(&self, model: &str, repo: Option<&str>, file: Option<&str>) -> Result<()> {
         let cache_dir = self.model_cache_dir()?;
         if !cache_dir.exists() { return Ok(()); }
 
+        let filename = file.map(|s| s.to_string()).unwrap_or_else(|| format!("ggml-{}.bin", model));
         let patterns = vec![
-            format!("ggml-{}.bin", model),
+            filename,
             format!("ggml-{}-encoder.mlmodelc", model),
             format!("ggml-{}-encoder.mlmodelc.zip", model),
         ];
@@ -715,13 +719,14 @@ impl ModelManager {
 
         for entry in &manifest::MANIFEST.models {
             let present = match &entry.source {
-                Source::WhisperGgml { model } => {
-                    let filename = format!("ggml-{model}.bin");
+                Source::WhisperGgml { model, repo, file } => {
+                    let filename = file.clone().unwrap_or_else(|| format!("ggml-{model}.bin"));
+                    let repo_id = repo.as_deref().unwrap_or(WHISPER_REPO_ID);
                     // Validate (not just existence) so a stale/corrupt/partial file left by
                     // a previous interrupted download isn't reported as cached — otherwise
                     // the UI hides the "Download" step and a fresh download silently starts
                     // once transcription begins, with no visible progress.
-                    match self.find_cached_snapshot_with_files(WHISPER_REPO_ID, &[filename.as_str()]) {
+                    match self.find_cached_snapshot_with_files(repo_id, &[filename.as_str()]) {
                         Ok(Some(snapshot_dir)) => validate_model_file(&snapshot_dir.join(&filename)).is_ok(),
                         _ => false,
                     }
@@ -775,7 +780,7 @@ impl ModelManager {
         }
         match manifest::get(model_name) {
             Some(entry) => match &entry.source {
-                Source::WhisperGgml { model } => self.delete_whisper_model(model).is_ok(),
+                Source::WhisperGgml { model, repo, file } => self.delete_whisper_model(model, repo.as_deref(), file.as_deref()).is_ok(),
                 Source::Hf { repo, .. } => {
                     if let Some((subdir, key)) = Self::flat_layout(entry) {
                         self.delete_flat_dir(subdir, &key).is_ok()
@@ -785,7 +790,7 @@ impl ModelManager {
                 }
             },
             // Unknown id: best-effort whisper symlink removal (legacy behavior).
-            None => self.delete_whisper_model(model_name).is_ok(),
+            None => self.delete_whisper_model(model_name, None, None).is_ok(),
         }
     }
 

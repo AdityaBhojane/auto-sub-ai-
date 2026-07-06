@@ -88,7 +88,7 @@ impl ModelEntry {
     pub fn hf_repo(&self) -> Option<&str> {
         match &self.source {
             Source::Hf { repo, .. } => Some(repo.as_str()),
-            Source::WhisperGgml { .. } => None,
+            Source::WhisperGgml { repo, .. } => repo.as_deref(),
         }
     }
 }
@@ -127,7 +127,13 @@ pub enum Source {
     },
     /// A whisper.cpp GGML model — expands to `ggml-{model}.bin` from
     /// `ggerganov/whisper.cpp` (plus the optional CoreML encoder on macOS).
-    WhisperGgml { model: String },
+    WhisperGgml {
+        model: String,
+        #[serde(default)]
+        repo: Option<String>,
+        #[serde(default)]
+        file: Option<String>,
+    },
 }
 
 /// A single file to download. A plain string keeps the repo-relative name and

@@ -254,6 +254,17 @@
         ]
       },
       "ui": { "size": "2GB", "ram": "4GB", "image": "moose.png", "accuracy": 4, "weight": 1, "languageSupport": { "kind": "restricted", "languages": ["ar", "de", "el", "en", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt", "vi", "zh"] } }
+    },
+    {
+      "id": "hinglish",
+      "engine": "whisper",
+      "source": { 
+        "type": "whisper-ggml", 
+        "model": "hinglish", 
+        "repo": "curiophile/whisper-hindi2hinglish-ggml", 
+        "file": "ggml-model-q4_0.bin" 
+      },
+      "ui": { "size": "150MB", "ram": "1GB", "image": "otter.png", "accuracy": 3, "weight": 4, "languageSupport": { "kind": "single_language", "language": "hi-latn" } }
     }
   ],
   "_vad_comment": "Voice-activity detection model, auto-downloaded during transcription (not user-selectable).",

@@ -69,7 +69,7 @@ export const modelFilterOrders = {
     "moonshine-tiny", "tiny", "tiny.en", "base", "base.en",
     "moonshine-tiny-ar", "moonshine-tiny-zh", "moonshine-tiny-ja",
     "moonshine-tiny-ko", "moonshine-tiny-uk", "moonshine-tiny-vi",
-    "moonshine-base", "sense-voice",
+    "moonshine-base", "sense-voice", "hinglish",
     // 2GB RAM
     "small.en", "small", "parakeet",
     // 3-4GB RAM
@@ -83,14 +83,14 @@ export const modelFilterOrders = {
     "cohere", "parakeet", "canary", "large-v3", "large-v3-turbo",
     "moonshine-tiny-vi", "moonshine-tiny-ar", "moonshine-tiny-zh", "moonshine-tiny-ja", "moonshine-tiny-ko", "medium.en", "medium",
     "sense-voice", "moonshine-base", "small.en", "small", "moonshine-tiny-uk",
-    "tiny", "tiny.en", "base", "base.en", "moonshine-tiny"
+    "hinglish", "tiny", "tiny.en", "base", "base.en", "moonshine-tiny"
   ],
   recommended: [
     "parakeet", "canary", "sense-voice", "cohere", "large-v3-turbo", "large-v3",
     "moonshine-tiny-ar", "moonshine-tiny-zh", "moonshine-tiny-ja", "moonshine-tiny-ko", "moonshine-tiny-uk", "moonshine-tiny-vi",
     "moonshine-base", "small.en", "small",
     "medium", "medium.en",
-    "tiny", "tiny.en", "base", "base.en", "moonshine-tiny"
+    "hinglish", "tiny", "tiny.en", "base", "base.en", "moonshine-tiny"
   ]
 };
 
