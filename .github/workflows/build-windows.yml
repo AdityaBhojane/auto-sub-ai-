@@ -33,3 +33,4 @@ jobs:
         with:
           name: AutoSubs-Windows-EXE
           path: C:\cargo-target\release\bundle\nsis\*.exe
+
