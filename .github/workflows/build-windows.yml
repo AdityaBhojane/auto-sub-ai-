@@ -34,6 +34,11 @@ jobs:
           cd binaries
           gh release download --repo tmoroney/ffmpeg-binaries --pattern "ffmpeg-x86_64-pc-windows-msvc.zip" --clobber
           7z e ffmpeg-x86_64-pc-windows-msvc.zip
+          # Tauri sidecar naming: externalBin "binaries/ffmpeg" on x86_64-pc-windows-msvc
+          # becomes "binaries/ffmpeg-x86_64-pc-windows-msvc.exe"
+          # If the zip extracted a plain ffmpeg.exe, rename it.
+          if (Test-Path "ffmpeg.exe") { Move-Item "ffmpeg.exe" "ffmpeg-x86_64-pc-windows-msvc.exe" -Force }
+          Get-ChildItem -Name
 
       - name: Build Tauri
         continue-on-error: true
