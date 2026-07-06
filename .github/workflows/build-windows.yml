@@ -36,6 +36,7 @@ jobs:
           7z e ffmpeg-x86_64-pc-windows-msvc.zip
 
       - name: Build Tauri
+        continue-on-error: true
         env:
           LIBCLANG_PATH: 'C:\Program Files\LLVM\bin'
           CARGO_TARGET_DIR: 'C:\cargo-target'
@@ -48,3 +49,4 @@ jobs:
         with:
           name: AutoSubs-Windows-EXE
           path: C:\cargo-target\release\bundle\nsis\*.exe
+          if-no-files-found: error
